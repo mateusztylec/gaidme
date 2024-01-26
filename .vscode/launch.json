@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Module",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "src.gaidme.cli",
+            "args": [
+                "reflect",
+                "show",
+                "docker",
+                "images"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}
