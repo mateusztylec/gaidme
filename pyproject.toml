@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gaidme"
-version = "0.1.1"
+version = "0.1.2"
 repository = "https://github.com/mateusztylec/gaidme"
 description = "cool AI-powered CLI tool"
 authors = ["Mateusz Tylec <mateusztylec@duck.com>"]
