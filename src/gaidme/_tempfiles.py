@@ -25,7 +25,7 @@ class TempFileManager:
             filepath = os.path.join(self.base_dir, filename)
             if os.path.isfile(filepath):
                 self.files[filename] = filepath
-                _logger.debug(f"File {filename} exists")
+                _logger.debug(f"File {filename} already exist")
 
     def create(self, filename: str, content: str):
         """

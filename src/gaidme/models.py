@@ -14,7 +14,10 @@ def get_ai_client_and_model() -> Union[list[AzureOpenAI, str], list[OpenAI, str]
     It is ugly and will be refactored later
     """
     if os.getenv("OPENAI_API_KEY"):
-        return OpenAI(api_key=os.getenv("OPENAI_API_KEY")), os.getenv("OPENAI_API_MODEL")
+        if os.getenv("OPENAI_API_MODEL"):
+            return OpenAI(api_key=os.getenv("OPENAI_API_KEY")), os.getenv("OPENAI_API_MODEL")
+        else:
+            return OpenAI(api_key=os.getenv("OPENAI_API_KEY")), "gpt-4-turbo"
     elif os.getenv("AZURE_OPENAI_ENDPOINT"):
         if not os.getenv("AZURE_OPENAI_KEY"):
             raise GaidmeError("Missing AZURE_OPENAI_KEY")
@@ -22,7 +25,7 @@ def get_ai_client_and_model() -> Union[list[AzureOpenAI, str], list[OpenAI, str]
             raise GaidmeError("Missing AZURE_OPENAI_DEPLOYMENT")
         if not os.getenv("AZURE_OPENAI_API_VERSION"):
             return AzureOpenAI(azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-                            api_key=os.getenv("AZURE_OPENAI_KEY")), os.getenv("AZURE_OPENAI_DEPLOYMENT")
+                               api_key=os.getenv("AZURE_OPENAI_KEY")), os.getenv("AZURE_OPENAI_DEPLOYMENT")
         else:
             return AzureOpenAI(azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
                                api_key=os.getenv("AZURE_OPENAI_KEY"),
@@ -51,7 +54,6 @@ def get_command(user_prompt: str) -> str:
 def get_reflection(user_prompt: str, system_prompt: str) -> str:
     client, model = get_ai_client_and_model()
     _logger.debug("running get_reflection")
-    _logger.debug(system_prompt)
     response = client.chat.completions.create(
         model=model,
         messages=[

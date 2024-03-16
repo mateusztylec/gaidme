@@ -52,10 +52,6 @@ class Shell:
 
 
     def execute(self, command: str) -> int:
-        if self._name != "bash":  # TODO: mozna to jakos poprawić pewnie
-            # _logger.debug(f"SHELL: {self._name}")
-            pass
-
         terminal = shutil.get_terminal_size()
         c = pexpect.spawnu(
             self._path, dimensions=(terminal.lines, terminal.columns))
@@ -74,11 +70,13 @@ class Shell:
         c.interact(escape_character=None)
         c.close()
 
-        # Usunięto sys.exit(c.exitstatus) i zamiast tego zwracamy status wyjścia
         sys.exit(c.exitstatus)
 
     def check_complience(self):
         if self._name == "bash":
             if os.getenv("PROMPT_COMMAND") != "history -a;":
                 raise GaidmeError("Missing PROMPT_COMMAND env variable. Run `export 'PROMPT_COMMAND=history -a;'`")
+        if self._name == "sh":
+            raise GaidmeError("sh shell in not supported for 'reflect' command")
+    
 
