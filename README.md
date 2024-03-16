@@ -70,6 +70,7 @@ $ docker image ls | awk '{print $3}' | uniq #this is result of the command
 'reflect' command is supported only in zsh and bash
 
 ### Video (demo)
+![demo](https://github.com/mateusztylec/gaidme/assets/79941376/c1928ecb-c0b9-4b76-a519-17edb200540f)
 
 ### Rules
 - Do not use special characters like %#@| and other when creating the prompt
