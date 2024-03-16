@@ -2,13 +2,13 @@ from .schema import get_command_fnc, get_command_system_prompt
 from .utils import _parse_command_from_response
 from ._errors import GaidmeError
 from openai import OpenAI, AzureOpenAI
-from typing import Union
+from typing import Union, List
 import logging
 import os
 
 _logger = logging.getLogger(__name__)
 
-def get_ai_client_and_model() -> Union[list[AzureOpenAI, str], list[OpenAI, str]]:
+def get_ai_client_and_model() -> Union[List[AzureOpenAI, str], List[OpenAI, str]]:
     """
     Based on the env variable returns openai client.
     It is ugly and will be refactored later
@@ -17,7 +17,7 @@ def get_ai_client_and_model() -> Union[list[AzureOpenAI, str], list[OpenAI, str]
         if os.getenv("OPENAI_API_MODEL"):
             return OpenAI(api_key=os.getenv("OPENAI_API_KEY")), os.getenv("OPENAI_API_MODEL")
         else:
-            return OpenAI(api_key=os.getenv("OPENAI_API_KEY")), "gpt-4-turbo"
+            return OpenAI(api_key=os.getenv("OPENAI_API_KEY")), "gpt-4-turbo-preview"
     elif os.getenv("AZURE_OPENAI_ENDPOINT"):
         if not os.getenv("AZURE_OPENAI_KEY"):
             raise GaidmeError("Missing AZURE_OPENAI_KEY")
