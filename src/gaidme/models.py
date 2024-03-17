@@ -2,13 +2,12 @@ from .schema import get_command_fnc, get_command_system_prompt
 from .utils import _parse_command_from_response
 from ._errors import GaidmeError
 from openai import OpenAI, AzureOpenAI
-from typing import Union, List
 import logging
 import os
 
 _logger = logging.getLogger(__name__)
 
-def get_ai_client_and_model() -> Union[List[AzureOpenAI, str], List[OpenAI, str]]:
+def get_ai_client_and_model():
     """
     Based on the env variable returns openai client.
     It is ugly and will be refactored later
