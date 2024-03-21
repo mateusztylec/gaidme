@@ -7,6 +7,9 @@ Do you recognize that?? Wait no more!
 
 gaidme is an innovative command-line interface (CLI) tool designed to boost your development workflow. It utilizes AI to understand and execute system commands, making task automation, information queries, and environment management smoother and more intuitive.
 
+## Video (demo)
+![demo](https://github.com/mateusztylec/gaidme/assets/79941376/c1928ecb-c0b9-4b76-a519-17edb200540f)
+
 ## Getting Started
 ### Prerequisites
 
@@ -68,9 +71,6 @@ $ gaidme reflect show id only
 $ docker image ls | awk '{print $3}' | uniq #this is result of the command
 ``` 
 'reflect' command is supported only in zsh and bash
-
-### Video (demo)
-![demo](https://github.com/mateusztylec/gaidme/assets/79941376/c1928ecb-c0b9-4b76-a519-17edb200540f)
 
 ### Rules
 - Do not use special characters like %#@| and other when creating the prompt
