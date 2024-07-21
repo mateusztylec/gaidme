@@ -82,6 +82,7 @@ I am currently working on my own API. It will have access to the current documen
 - Support for AzureOpenAI
 - Option to edit commands before execution
 - Get tailored command based on the the previous command
+- Saves commands in the history
 
 ## Contributing and Support
 We welcome contributions to gaidme! If you have suggestions for improvements or bug fixes, please feel free to submit an issue or pull request. 
