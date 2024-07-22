@@ -1,85 +1,154 @@
-from ._errors import GaidmeError, CLIError, display_error
-from ._api.reflect import reflect_command
-from ._api.hidden import hidden_command
-from ._version import __version__
-from ._api.ask import ask_command
-from argparse import Namespace
-import argparse
-import pydantic
-import logging
+from prompt_toolkit import PromptSession
+from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.styles import Style
+from prompt_toolkit.formatted_text import HTML
+from prompt_toolkit.enums import EditingMode
+from prompt_toolkit.shortcuts import CompleteStyle
+import pyperclip
+from gaidme.config_manager import get_api_key, ConfigManager
+from gaidme.logger import get_logger
+import subprocess
 import sys
+from gaidme.compiler import CustomCompleter
+from gaidme.io import IO
+from gaidme.commands import Commands
 
-_logger = logging.getLogger("gaidme.cli")
+logger = get_logger(__name__)
 
-def main() -> int:
-    try:
-        _main()
-    except (GaidmeError, CLIError, pydantic.ValidationError) as err:
-        display_error(err)
-        return 1
-    except KeyboardInterrupt:
-        sys.stderr.write("\n")
-        return 1
-    return 0
+class GAIDME:
+    def __init__(self):
+        self.running = True
+        self.command_history = []
+        self.history = InMemoryHistory()
+        self.session = self.setup_prompt()
+        self.io = IO()
+        self.commands_handler = Commands()
+        self.secret_manager = ConfigManager()
+
+        self.ensure_api_key()
+
+    def setup_prompt(self):
+        style = Style.from_dict({
+            'completion-menu.completion': 'bg:#008888 #ffffff',
+            'completion-menu.completion.current': 'bg:#00aaaa #000000',
+        })
+
+        return PromptSession(
+            history=InMemoryHistory(),
+            completer=CustomCompleter(),
+            style=style,
+            complete_while_typing=True,
+            editing_mode=EditingMode.EMACS,
+            complete_style=CompleteStyle.MULTI_COLUMN,
+            reserve_space_for_menu=4,
+        )
 
 
-def _main() -> None:
-    parser = _parser_build()
-    args = _parse_args(parser)
+    def ensure_api_key(self):
+        api_key = get_api_key()
+        if not api_key:
+            self.io.print_message("GAIDME API key not found.")
+            choice = self.io.choose_option(
+                message="Choose an option:",
+                choices=["Enter GAIDME API key"]
+            )
 
-    if args.verbosity != 0:
-        sys.stderr.write("Warning: --verbosity isn't supported yet\n")
+            if choice == "Enter GAIDME API key":
+                api_key = self.prompt_for_api_key()
+            else:
+                self.io.print_message("Cannot proceed without an API key. Exiting.")
+                sys.exit(1)
+        
+        return api_key
 
-    args.func(args)
+    def prompt_for_api_key(self):
+        api_key = self.io.type_password("Please enter your GAIDME API key:")
+        if api_key:
+            self.secret_manager.save_api_key(api_key)
+            self.io.print_message("API key saved successfully.")
+        else:
+            self.io.print_message("No API key entered. Cannot proceed. Exiting.")
+            sys.exit(1)
+        return api_key
 
-    
-def _parse_args(parser: argparse.ArgumentParser) -> Namespace:
-    args = parser.parse_args()
-    _logger.debug("Parsing successful")
-    _logger.debug(f"{args}")
-    return args
+    def run(self):
+        self.io.print_message("Welcome to GAIDME! Type '/quit' to quit. Use '/ask' for AI assistance.")
+        while self.running:
+            try:
+                user_input = self.session.prompt(
+                    "gaidme>"
+                ).strip()
+                if user_input.startswith("/"):
+                    output = self.commands_handler.handle_command(
+                        command=user_input,
+                        command_history=self.command_history,
+                        function_callback=self.execute_command
+                    )
+                    self.io.print_message(output)
+                else:
+                    self.execute_command(user_input)
+            except KeyboardInterrupt:
+                self.io.print_message("\nUse '/quit' to quit.")
+
+    def handle_selection(self, selection, command):
+        if selection == "Copy command to clipboard":
+            pyperclip.copy(command)
+            self.io.print_message("Command copied to clipboard")
+        elif selection == "Explain command":
+            # Implement explanation functionality
+            self.io.print_message("Explanation: [Your explanation here]")
+        elif selection == "Execute command":
+            self.execute_command(command)
+        elif selection == "Quit":
+            self.io.print_message("Exiting...")
+            self.running = False
+
+    def execute_command(self, command):
+        try:
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1, universal_newlines=True)
+            
+            stdout_lines = []
+            stderr_lines = []
+
+            # Handle stdout in real-time
+            for line in process.stdout:
+                line = line.strip()
+                if line:
+                    self.io.print_message(line)
+                    stdout_lines.append(line)
+
+            # Handle stderr
+            for line in process.stderr:
+                line = line.strip()
+                if line:
+                    self.io.print_message(line)
+                    stderr_lines.append(line)
+
+            process.wait()
+            rc = process.returncode
+            
+            stdout = "\n".join(stdout_lines)
+            stderr = "\n".join(stderr_lines)
+            result = "Success" if rc == 0 else stderr
+
+            self.command_history.append({
+                "command": command,
+                "stdout": stdout,
+                "stderr": stderr,
+                "result": result
+            })
+        except Exception as e:
+            self.io.print_message(f"Error executing command: {e}")
+            self.command_history.append({
+                "command": command,
+                "error": str(e),
+                "result": "Error"
+            })
 
 
-def _parser_build() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="gaidme")
-
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="count",
-        dest="verbosity",
-        default=0,
-        help="Set verbosity level"
-    )
-    parser.add_argument(
-        "--version",
-        action="version",
-        version="%(prog)s"+__version__,
-    )
-
-    subparsers = parser.add_subparsers()
-    parser_ask = subparsers.add_parser(
-        "ask", help="Ask ai about specific command")
-    parser_ask.add_argument(
-        "ask", nargs="*", help="Ask ai about specific command")
-    parser_ask.set_defaults(func=ask_command)
-
-    parser_reflect = subparsers.add_parser(
-        "reflect", help="Reflet about previous command")
-    parser_reflect.add_argument(
-        "reflect", nargs="*", help="Reflect about previous command")
-    parser_reflect.set_defaults(func=reflect_command)
-
-    parser_hidden = subparsers.add_parser(
-        "hidden")
-    parser_hidden.set_defaults(func=hidden_command)
-
-    def help(param) -> None:
-        parser.print_help()
-
-    parser.set_defaults(func=help)
-    return parser
-
+def main():
+    gaidme = GAIDME()
+    gaidme.run()
 
 if __name__ == "__main__":
     main()
