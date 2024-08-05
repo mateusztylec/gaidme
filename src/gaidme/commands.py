@@ -4,7 +4,7 @@ import pyperclip
 import sys
 
 class Commands:
-    _commands = ["/ask", "/quit", "/help", "/settings"]
+    _commands = ["/ask", "/explain", "/help", "/settings", "/quit"]
 
     def __init__(self):
         self.io = IO()
@@ -24,6 +24,8 @@ class Commands:
             return self.help_command()
         elif command.startswith("/settings"):
             return self.settings_command()
+        elif command.startswith("/explain"):
+            return self.explain_command()
         else:
             return "Command not found"
 
@@ -51,17 +53,20 @@ class Commands:
         elif selection == "Run command":
             function_callback(ai_command)
         elif selection == "Quit":
-            self.io.print_message("Quitting...")
+            self.io.print_message("bye")
             sys.exit(0)
 
     def quit_command(self):
-        return "Goodbye!"
+        return "see u soon ;)"
     
     def help_command(self):
         return "Help command TODO"
     
     def settings_command(self):
         return "Settings command TODO"
+
+    def explain_command(self):
+        return "Explain command TODO"
 
     @staticmethod
     def get_completions(cmd):

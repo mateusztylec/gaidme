@@ -1,6 +1,16 @@
 import requests
+import platform
+import os
 from gaidme.models import CommandHistory
 from gaidme.config_manager import get_api_key
+
+def get_system_metadata():
+    return {
+        "os": platform.system(),
+        "os_version": platform.version(),
+        "terminal": os.environ.get("TERM", "Unknown"),
+        "shell": os.environ.get("SHELL", "Unknown")
+    }
 
 def get_ai_response(question, command_history: list[CommandHistory]):
     api_key = get_api_key()
@@ -11,7 +21,10 @@ def get_ai_response(question, command_history: list[CommandHistory]):
     }
     payload = {
         "question": question,
-        "command_history": [command for command in command_history]
+        "command_history": [command for command in command_history],
+        "metadata": {
+            "system": get_system_metadata()
+        }
     }
 
     try:
