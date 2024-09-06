@@ -1,4 +1,12 @@
-[tool.poetry]
+
+
+
+
+źć
+
+
+  
+ls [tool.poetry]
 name = "gaidme"
 version = "0.1.3"
 repository = "https://github.com/mateusztylec/gaidme"

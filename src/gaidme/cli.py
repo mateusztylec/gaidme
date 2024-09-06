@@ -5,7 +5,7 @@ from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.shortcuts import CompleteStyle
 import pyperclip
-from gaidme.config_manager import get_api_key, ConfigManager
+from gaidme.config_manager import config_manager
 from gaidme.logger import get_logger
 import subprocess
 import sys
@@ -23,7 +23,7 @@ class GAIDME:
         self.session = self.setup_prompt()
         self.io = IO()
         self.commands_handler = Commands()
-        self.secret_manager = ConfigManager()
+        self.config_manager = config_manager
 
         self.total_history_chars = 0
         self.max_history_chars = 50000
@@ -46,18 +46,17 @@ class GAIDME:
             complete_while_typing=True,
             editing_mode=EditingMode.EMACS,
             complete_style=CompleteStyle.MULTI_COLUMN,
-            reserve_space_for_menu=3,
-            
+            reserve_space_for_menu=3
         )
 
 
     def ensure_api_key(self):
-        api_key = get_api_key()
+        api_key = config_manager.get_api_key
         if not api_key:
             self.io.print_message("GAIDME API key not found.")
             choice = self.io.choose_option(
                 message="Choose an option:",
-                choices=["Enter GAIDME API key"]
+                choices=["Enter GAIDME API key", "Exit"]
             )
 
             if choice == "Enter GAIDME API key":
@@ -71,7 +70,7 @@ class GAIDME:
     def prompt_for_api_key(self):
         api_key = self.io.type_password("Please enter your GAIDME API key:")
         if api_key:
-            self.secret_manager.save_api_key(api_key)
+            self.config_manager.save_api_key(api_key)
             self.io.print_message("API key saved successfully.")
         else:
             self.io.print_message("No API key entered. Cannot proceed. Exiting.")
@@ -158,7 +157,7 @@ class GAIDME:
         stdout, stdout_truncated = truncate(stdout, self.max_single_entry_chars)
         stderr, stderr_truncated = truncate(stderr, self.max_single_entry_chars)
 
-        truncated = stdout_truncated or stdout_truncated
+        truncated = stdout_truncated or stderr_truncated
         if truncated:
             logger.debug(truncated)
         

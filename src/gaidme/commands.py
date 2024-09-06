@@ -30,6 +30,7 @@ class Commands:
             return "Command not found"
 
     def ask_command(self, question, command_history, function_callback):
+        
         ai_command = get_ai_response(question, command_history)
         self.io.print_ai_suggestion(ai_command)
         options = [

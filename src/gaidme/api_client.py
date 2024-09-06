@@ -2,7 +2,7 @@ import requests
 import platform
 import os
 from gaidme.models import CommandHistory
-from gaidme.config_manager import get_api_key
+from gaidme.config_manager import config_manager
 
 def get_system_metadata():
     return {
@@ -13,7 +13,7 @@ def get_system_metadata():
     }
 
 def get_ai_response(question, command_history: list[CommandHistory]):
-    api_key = get_api_key()
+    api_key = config_manager.get_api_key()
 
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -28,7 +28,9 @@ def get_ai_response(question, command_history: list[CommandHistory]):
     }
 
     try:
-        response = requests.post("http://localhost:5050/v1/completions/asks", json=payload, headers=headers)
+        api_url = "https://api-dev.gaidme.app"
+        # api_url = "http://localhost:5050"
+        response = requests.post(f"{api_url}/v1/completions/asks", json=payload, headers=headers)
         response.raise_for_status()
         return response.json()["answer"]
     except requests.RequestException as e:
