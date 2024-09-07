@@ -12,7 +12,7 @@ def get_system_metadata():
         "shell": os.environ.get("SHELL", "Unknown")
     }
 
-def get_ai_response(question, command_history: list[CommandHistory]):
+def get_ai_response(question: str, command_history: list[CommandHistory]):
     api_key = config_manager.get_api_key()
 
     headers = {

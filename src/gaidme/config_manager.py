@@ -36,5 +36,3 @@ class ConfigManager:
                 self._config = json.load(f)
         else:
             self._config = {}
-
-config_manager = ConfigManager()

@@ -1,10 +1,10 @@
 from prompt_toolkit.completion import Completer, Completion
-from gaidme.commands import Commands
+# from gaidme.commands import Commands
 
 class CustomCompleter(Completer):
-    def __init__(self):
-        self.commands = Commands()
-        self.command_names = self.commands.available_commands()
+    def __init__(self, commands):
+        # self.commands = Commands()
+        self.command_names = commands
         self.command_completions = {}
 
     def get_completions(self, document, complete_event):
