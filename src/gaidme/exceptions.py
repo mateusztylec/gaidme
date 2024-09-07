@@ -10,3 +10,5 @@ class CommandNotAllowedError(GAIDMEBaseException):
 class APIError(GAIDMEBaseException):
     """Raised when there's an issue with API communication."""
 
+class InvalidAPIKeyError(APIError):
+    """Raised when the API key is invalid."""

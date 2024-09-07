@@ -16,7 +16,7 @@ class IO:
         self.console.print(message)
 
     def print_error(self, message):
-        self.console.print(f"[red]{message}[/red]")
+        self.console.print(f"Error: {message}")
 
     def choose_option(self, **kwargs):
         custom_style = Style([

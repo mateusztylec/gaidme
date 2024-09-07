@@ -4,6 +4,7 @@ import os
 from gaidme.models import CommandHistory
 from gaidme.history_manager import HistoryManager
 from gaidme.config_manager import ConfigManager
+from gaidme.exceptions import InvalidAPIKeyError, APIError
 
 def get_system_metadata():
     return {
@@ -29,10 +30,12 @@ def get_ai_response(question: str, history_manager: HistoryManager, config_manag
     }
 
     try:
-        api_url = "https://api-dev.gaidme.app"
-        # api_url = "http://localhost:5050"
-        response = requests.post(f"{api_url}/v1/completions/asks", json=payload, headers=headers)
+        api_url = "https://api.gaidme.app"
+        response = requests.post(f"{api_url}/v1/completions/asks", json=payload, headers=headers, timeout=10)
         response.raise_for_status()
         return response.json()["answer"]
-    except requests.RequestException as e:
-        raise Exception(f"API request failed: {str(e)}")
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 401:
+            raise InvalidAPIKeyError("Invalid API key")
+        else:
+            raise APIError(f"API request failed: {str(e)}")

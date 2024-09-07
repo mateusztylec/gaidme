@@ -9,7 +9,6 @@ class AskCommand(BaseCommand):
         return "Ask AI for assistance"
 
     def execute(self, *args, **kwargs):
-        
         try:
             ai_command = get_ai_response(question=kwargs.get('question'), history_manager=self.gaidme.history_manager, config_manager=self.gaidme.config_manager)
         except ConfigError as e:

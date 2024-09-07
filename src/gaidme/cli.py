@@ -9,7 +9,7 @@ from gaidme.compiler import CustomCompleter
 from gaidme.config_manager import ConfigManager
 from gaidme.command_manager import CommandManager
 from gaidme.history_manager import HistoryManager
-from gaidme.exceptions import CommandNotAllowedError
+from gaidme.exceptions import CommandNotAllowedError, InvalidAPIKeyError, APIError
 from gaidme.commands.ask import AskCommand
 from gaidme.commands.quit import QuitCommand
 from gaidme.commands.help import HelpCommand
@@ -70,6 +70,10 @@ class GAIDME:
             except KeyboardInterrupt:
                 self.io.print_message("\nUse '/quit' to quit.")
             except CommandNotAllowedError as e:
+                self.io.print_error(str(e))
+            except InvalidAPIKeyError as e:
+                self.io.print_error(str(e))
+            except APIError as e:
                 self.io.print_error(str(e))
 
 def main():
