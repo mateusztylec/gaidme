@@ -1,85 +1,84 @@
-from ._errors import GaidmeError, CLIError, display_error
-from ._api.reflect import reflect_command
-from ._api.hidden import hidden_command
-from ._version import __version__
-from ._api.ask import ask_command
-from argparse import Namespace
-import argparse
-import pydantic
-import logging
-import sys
+from prompt_toolkit.styles import Style
+from prompt_toolkit import PromptSession
+from prompt_toolkit.enums import EditingMode
+from prompt_toolkit.shortcuts import CompleteStyle
+from prompt_toolkit.history import InMemoryHistory
+from gaidme.io import IO
+from gaidme.logger import get_logger
+from gaidme.compiler import CustomCompleter
+from gaidme.config_manager import ConfigManager
+from gaidme.command_manager import CommandManager
+from gaidme.history_manager import HistoryManager
+from gaidme.exceptions import CommandNotAllowedError, InvalidAPIKeyError, APIError
+from gaidme.commands.ask import AskCommand
+from gaidme.commands.quit import QuitCommand
+from gaidme.commands.help import HelpCommand
+from gaidme.commands.settings import SettingsCommand
 
-_logger = logging.getLogger("gaidme.cli")
+logger = get_logger(__name__)
 
-def main() -> int:
-    try:
-        _main()
-    except (GaidmeError, CLIError, pydantic.ValidationError) as err:
-        display_error(err)
-        return 1
-    except KeyboardInterrupt:
-        sys.stderr.write("\n")
-        return 1
-    return 0
+class GAIDME:
+    def __init__(self):
+        self.running = True
+        self.io = IO()
+        self.command_manager = CommandManager()
+        self.config_manager = ConfigManager()
+        self.history = InMemoryHistory()
+        self.history_manager = HistoryManager()
 
+        self.session = self.setup_prompt()
 
-def _main() -> None:
-    parser = _parser_build()
-    args = _parse_args(parser)
+    def setup_commands(self):
+        self.command_manager.add_command("/ask", AskCommand(self))
+        self.command_manager.add_command("/settings", SettingsCommand(self))
+        self.command_manager.add_command("/quit", QuitCommand(self))
+        self.command_manager.add_command("/help", HelpCommand(self))
 
-    if args.verbosity != 0:
-        sys.stderr.write("Warning: --verbosity isn't supported yet\n")
+    def setup_prompt(self):
+        self.setup_commands()
 
-    args.func(args)
+        style = Style.from_dict({
+            'completion-menu.completion': 'bg:#008888 #ffffff',
+            'completion-menu.completion.current': 'bg:#00aaaa #000000',
+        })
 
-    
-def _parse_args(parser: argparse.ArgumentParser) -> Namespace:
-    args = parser.parse_args()
-    _logger.debug("Parsing successful")
-    _logger.debug(f"{args}")
-    return args
+        return PromptSession(
+            history=self.history,
+            completer=CustomCompleter(self.command_manager.get_available_commands()),
+            style=style,
+            complete_while_typing=True,
+            editing_mode=EditingMode.EMACS,
+            complete_style=CompleteStyle.MULTI_COLUMN,
+            reserve_space_for_menu=3
+        )
 
+    def run(self):
+        self.io.print_message("Welcome to GAIDME! Type '/help' for available commands.")
+        while self.running:
+            try:
+                user_input = self.session.prompt(
+                    "gaidme> ",
+                    style=Style.from_dict({
+                        'prompt': 'bold #ffff00',  # Yellow color for the prompt
+                    })
+                ).strip()
+                if user_input.startswith("/"):
+                    self.command_manager.handle_input(user_input, command_history=self.history_manager.get_history())
+                else:
+                    command_result = self.io.execute_command(user_input)
+                    self.history_manager.add_to_history(**command_result)
+            except KeyboardInterrupt:
+                self.io.print_message("\nUse '/quit' to quit.")
+            except CommandNotAllowedError as e:
+                self.io.print_error(str(e))
+            except InvalidAPIKeyError as e:
+                self.io.print_error(str(e))
+            except APIError as e:
+                self.io.print_error(str(e))
 
-def _parser_build() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="gaidme")
-
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="count",
-        dest="verbosity",
-        default=0,
-        help="Set verbosity level"
-    )
-    parser.add_argument(
-        "--version",
-        action="version",
-        version="%(prog)s"+__version__,
-    )
-
-    subparsers = parser.add_subparsers()
-    parser_ask = subparsers.add_parser(
-        "ask", help="Ask ai about specific command")
-    parser_ask.add_argument(
-        "ask", nargs="*", help="Ask ai about specific command")
-    parser_ask.set_defaults(func=ask_command)
-
-    parser_reflect = subparsers.add_parser(
-        "reflect", help="Reflet about previous command")
-    parser_reflect.add_argument(
-        "reflect", nargs="*", help="Reflect about previous command")
-    parser_reflect.set_defaults(func=reflect_command)
-
-    parser_hidden = subparsers.add_parser(
-        "hidden")
-    parser_hidden.set_defaults(func=hidden_command)
-
-    def help(param) -> None:
-        parser.print_help()
-
-    parser.set_defaults(func=help)
-    return parser
-
+def main():
+    gaidme = GAIDME()
+    gaidme.run()
 
 if __name__ == "__main__":
     main()
