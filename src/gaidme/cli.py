@@ -9,6 +9,7 @@ from gaidme.compiler import CustomCompleter
 from gaidme.config_manager import ConfigManager
 from gaidme.command_manager import CommandManager
 from gaidme.history_manager import HistoryManager
+from gaidme.exceptions import CommandNotAllowedError
 from gaidme.commands.ask import AskCommand
 from gaidme.commands.quit import QuitCommand
 from gaidme.commands.help import HelpCommand
@@ -24,7 +25,6 @@ class GAIDME:
         self.config_manager = ConfigManager()
         self.history = InMemoryHistory()
         self.history_manager = HistoryManager()
-        self.setup_commands()
 
         self.session = self.setup_prompt()
 
@@ -35,6 +35,8 @@ class GAIDME:
         self.command_manager.add_command("/help", HelpCommand(self))
 
     def setup_prompt(self):
+        self.setup_commands()
+
         style = Style.from_dict({
             'completion-menu.completion': 'bg:#008888 #ffffff',
             'completion-menu.completion.current': 'bg:#00aaaa #000000',
@@ -49,30 +51,6 @@ class GAIDME:
             complete_style=CompleteStyle.MULTI_COLUMN,
             reserve_space_for_menu=3
         )
-
-    # def ensure_api_key(self):
-    #     api_key = self.config_manager.get_api_key()
-    #     if not api_key:
-    #         self.io.print_message("GAIDME API key not found.")
-    #         choice = self.io.choose_option(
-    #             message="Choose an option:",
-    #             choices=["Enter GAIDME API key", "Exit"]
-    #         )
-
-    #         if choice == "Enter GAIDME API key":
-    #             self.prompt_for_api_key()
-    #         else:
-    #             self.io.print_message("Cannot proceed without an API key. Exiting.")
-    #             sys.exit(1)
-
-    # def prompt_for_api_key(self):
-    #     api_key = self.io.type_password("Please enter your GAIDME API key:")
-    #     if api_key:
-    #         self.config_manager.save_api_key(api_key)
-    #         self.io.print_message("API key saved successfully.")
-    #     else:
-    #         self.io.print_message("No API key entered. Cannot proceed. Exiting.")
-    #         sys.exit(1)
 
     def run(self):
         self.io.print_message("Welcome to GAIDME! Type '/help' for available commands.")
@@ -91,6 +69,8 @@ class GAIDME:
                     self.history_manager.add_to_history(**command_result)
             except KeyboardInterrupt:
                 self.io.print_message("\nUse '/quit' to quit.")
+            except CommandNotAllowedError as e:
+                self.io.print_error(str(e))
 
 def main():
     gaidme = GAIDME()

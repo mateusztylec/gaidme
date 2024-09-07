@@ -2,7 +2,8 @@ import requests
 import platform
 import os
 from gaidme.models import CommandHistory
-from gaidme.config_manager import config_manager
+from gaidme.history_manager import HistoryManager
+from gaidme.config_manager import ConfigManager
 
 def get_system_metadata():
     return {
@@ -12,7 +13,7 @@ def get_system_metadata():
         "shell": os.environ.get("SHELL", "Unknown")
     }
 
-def get_ai_response(question: str, command_history: list[CommandHistory]):
+def get_ai_response(question: str, history_manager: HistoryManager, config_manager: ConfigManager):
     api_key = config_manager.get_api_key()
 
     headers = {
@@ -21,7 +22,7 @@ def get_ai_response(question: str, command_history: list[CommandHistory]):
     }
     payload = {
         "question": question,
-        "command_history": [command for command in command_history],
+        "command_history": [command for command in history_manager.get_history()],
         "metadata": {
             "system": get_system_metadata()
         }

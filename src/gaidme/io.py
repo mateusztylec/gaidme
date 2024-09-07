@@ -3,15 +3,20 @@ from prompt_toolkit.styles import Style
 import questionary
 import subprocess
 from gaidme.logger import get_logger
+from gaidme.exceptions import CommandNotAllowedError
 
 logger = get_logger(__name__)
 
 class IO:
     def __init__(self):
         self.console = Console(color_system=None)
+        self.blacklisted_commands = ['nano', 'vim', 'neovim', 'vi', 'emacs']
 
     def print_message(self, message):
         self.console.print(message)
+
+    def print_error(self, message):
+        self.console.print(f"[red]{message}[/red]")
 
     def choose_option(self, **kwargs):
         custom_style = Style([
@@ -32,6 +37,11 @@ class IO:
         self.console.print(f"Suggestion: {suggestion}")
 
     def execute_command(self, command):
+        # Check if the command starts with any blacklisted command
+        if any(command.strip().startswith(cmd) for cmd in self.blacklisted_commands):
+            blocked_command = next(cmd for cmd in self.blacklisted_commands if command.strip().startswith(cmd))
+            raise CommandNotAllowedError(f"Command '{blocked_command}' won't work in gaidme. Copy the command and quit gaidme")
+
         try:
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1, universal_newlines=True)
             

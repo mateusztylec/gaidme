@@ -6,5 +6,5 @@ class QuitCommand(BaseCommand):
         return "Quit the application"
 
     def execute(self, *args, **kwargs):
-        self.gaidme.io.print_message("Goodbye!")
+        self.gaidme.io.print_message("see you soon 🫶")
         self.gaidme.running = False

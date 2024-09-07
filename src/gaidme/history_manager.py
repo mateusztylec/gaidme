@@ -4,14 +4,13 @@ from gaidme.logger import get_logger
 logger = get_logger(__name__)
 
 class HistoryManager:
-    def __init__(self, max_history_chars: int = 50000, max_history_entries: int = 10, 
-                 truncated_entry_size: int = 500, max_single_entry_chars: int = 6000):
+    def __init__(self):
         self.command_history: List[Dict] = []
         self.total_history_chars = 0
-        self.max_history_chars = max_history_chars
-        self.max_history_entries = max_history_entries
-        self.truncated_entry_size = truncated_entry_size
-        self.max_single_entry_chars = max_single_entry_chars
+        self.max_history_chars = 50000
+        self.max_history_entries = 10
+        self.truncated_entry_size = 500
+        self.max_single_entry_chars = 6000
 
     def add_to_history(self, command: str, stdout: str, stderr: str, result: str):
         def truncate(text: str, max_length: int) -> tuple[str, bool]:
