@@ -30,7 +30,7 @@ def get_ai_response(question: str, history_manager: HistoryManager, config_manag
     }
 
     try:
-        api_url = "https://api.gaidme.app"
+        api_url = "https://api-dev.gaidme.app"
         response = requests.post(f"{api_url}/v1/completions/asks", json=payload, headers=headers, timeout=10)
         response.raise_for_status()
         return response.json()["answer"]
