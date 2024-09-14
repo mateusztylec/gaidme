@@ -21,6 +21,7 @@ pyperclip = "^1.9.0"
 pygments = "^2.18.0"
 rich = "^13.7.1"
 questionary = "^2.0.1"
+slowapi = "^0.1.9"
 
 [tool.poetry.scripts]
 gaidme = "gaidme.cli:main"
