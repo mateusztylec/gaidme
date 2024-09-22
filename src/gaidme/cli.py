@@ -1,3 +1,5 @@
+import os  # Added import for accessing current directory
+
 from prompt_toolkit.styles import Style
 from prompt_toolkit import PromptSession
 from prompt_toolkit.enums import EditingMode
@@ -9,7 +11,7 @@ from gaidme.compiler import CustomCompleter
 from gaidme.config_manager import ConfigManager
 from gaidme.command_manager import CommandManager
 from gaidme.history_manager import HistoryManager
-from gaidme.exceptions import CommandNotAllowedError, InvalidAPIKeyError, APIError
+from gaidme.exceptions import CommandNotAllowedError, InvalidAPIKeyError, APIError, APIVersionError, UsageLimitExceededError
 from gaidme.commands.ask import AskCommand
 from gaidme.commands.quit import QuitCommand
 from gaidme.commands.help import HelpCommand
@@ -28,18 +30,30 @@ class GAIDME:
 
         self.session = self.setup_prompt()
 
-    def setup_commands(self):
+    def get_prompt_text(self) -> str:
+        current_path = self.io.get_current_path()
+        home = os.path.expanduser("~")
+        if current_path == home:
+            display_path = "~"
+        elif current_path.startswith(home):
+            display_path = f"~{current_path[len(home):]}"
+        else:
+            display_path = current_path
+        return f"gaidme: {display_path}> "
+
+    def setup_commands(self) -> None:
         self.command_manager.add_command("/ask", AskCommand(self))
         self.command_manager.add_command("/settings", SettingsCommand(self))
         self.command_manager.add_command("/quit", QuitCommand(self))
         self.command_manager.add_command("/help", HelpCommand(self))
 
-    def setup_prompt(self):
+    def setup_prompt(self) -> PromptSession:
         self.setup_commands()
 
         style = Style.from_dict({
-            'completion-menu.completion': 'bg:#008888 #ffffff',
-            'completion-menu.completion.current': 'bg:#00aaaa #000000',
+            'completion-menu.completion': 'bg:#BA55D3 #ffffff',  # Light purple background
+            'completion-menu.completion.current': 'bg:#9370DB #000000',  # Slightly darker light purple for current selection
+            'prompt': 'bold #FFE403'  # Lighter yellow for the prompt
         })
 
         return PromptSession(
@@ -49,32 +63,29 @@ class GAIDME:
             complete_while_typing=True,
             editing_mode=EditingMode.EMACS,
             complete_style=CompleteStyle.MULTI_COLUMN,
-            reserve_space_for_menu=3
+            reserve_space_for_menu=3,
+            message=self.get_prompt_text()  # Changed to dynamic prompt
         )
 
-    def run(self):
-        self.io.print_message("Welcome to GAIDME! Type '/help' for available commands.")
+    def run(self) -> None:
+        self.io.print_message("Welcome to gaidme! Type /help for available commands")
         while self.running:
             try:
-                user_input = self.session.prompt(
-                    "gaidme> ",
-                    style=Style.from_dict({
-                        'prompt': 'bold #ffff00',  # Yellow color for the prompt
-                    })
-                ).strip()
+                self.session.message = self.get_prompt_text()  # Update prompt dynamically
+                user_input = self.session.prompt()
                 if user_input.startswith("/"):
                     self.command_manager.handle_input(user_input, command_history=self.history_manager.get_history())
                 else:
                     command_result = self.io.execute_command(user_input)
-                    self.history_manager.add_to_history(**command_result)
+                    if user_input != "":
+                        self.history_manager.add_to_history(**command_result)
             except KeyboardInterrupt:
                 self.io.print_message("\nUse '/quit' to quit.")
-            except CommandNotAllowedError as e:
+            except (CommandNotAllowedError, InvalidAPIKeyError, APIVersionError, APIError, UsageLimitExceededError) as e:
                 self.io.print_error(str(e))
-            except InvalidAPIKeyError as e:
-                self.io.print_error(str(e))
-            except APIError as e:
-                self.io.print_error(str(e))
+            except Exception as e:
+                logger.error(f"An unexpected error occurred: {str(e)}")
+                self.io.print_error("An unexpected error occurred. Please try again.")
 
 def main():
     gaidme = GAIDME()

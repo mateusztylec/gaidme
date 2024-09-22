@@ -12,3 +12,9 @@ class APIError(GAIDMEBaseException):
 
 class InvalidAPIKeyError(APIError):
     """Raised when the API key is invalid."""
+
+class APIVersionError(APIError):
+    """Raised when the API version is not supported."""
+
+class UsageLimitExceededError(APIError):
+    """Raised when the usage limit is exceeded."""

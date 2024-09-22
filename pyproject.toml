@@ -4,7 +4,7 @@ version = "0.1.3"
 repository = "https://github.com/mateusztylec/gaidme"
 description = "cool AI-powered CLI tool"
 authors = ["Mateusz Tylec <mateusztylec@duck.com>"]
-license = "MIT"
+license = "Proprietary"
 readme = "README.md"
 exclude = [".env"]
 
@@ -21,6 +21,7 @@ pyperclip = "^1.9.0"
 pygments = "^2.18.0"
 rich = "^13.7.1"
 questionary = "^2.0.1"
+rich-theme-manager = "^0.11.0"
 
 [tool.poetry.scripts]
 gaidme = "gaidme.cli:main"

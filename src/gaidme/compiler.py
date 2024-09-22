@@ -1,9 +1,7 @@
 from prompt_toolkit.completion import Completer, Completion
-# from gaidme.commands import Commands
 
 class CustomCompleter(Completer):
-    def __init__(self, commands):
-        # self.commands = Commands()
+    def __init__(self, commands: list[str]):
         self.command_names = commands
         self.command_completions = {}
 

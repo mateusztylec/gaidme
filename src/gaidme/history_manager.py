@@ -12,7 +12,7 @@ class HistoryManager:
         self.truncated_entry_size = 500
         self.max_single_entry_chars = 6000
 
-    def add_to_history(self, command: str, stdout: str, stderr: str, result: str):
+    def add_to_history(self, command: str, stdout: str, stderr: str, result: str) -> None:
         def truncate(text: str, max_length: int) -> tuple[str, bool]:
             return (text[:max_length] + "...", True) if len(text) > max_length else (text, False)
 
@@ -41,7 +41,7 @@ class HistoryManager:
         # Truncate older entries if necessary
         self._truncate_history()
 
-    def _truncate_history(self):
+    def _truncate_history(self) -> None:
         while self.total_history_chars > self.max_history_chars or len(self.command_history) > self.max_history_entries:
             if len(self.command_history) > 1:  # Ensure we always keep at least one entry
                 oldest_entry = self.command_history[0]

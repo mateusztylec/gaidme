@@ -1,2 +1,2 @@
 __title__ = "gaidme"
-__version__ = "0.1.3"
+__version__ = "1.0.0" #change in pyproject.toml as well

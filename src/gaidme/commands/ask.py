@@ -9,11 +9,22 @@ class AskCommand(BaseCommand):
         return "Ask AI for assistance"
 
     def execute(self, *args, **kwargs):
+        question = kwargs.get('question', '').strip()
+        
+        if not question:
+            self.gaidme.io.print_error("The message is empty. Please provide a valid question.")
+            return
+
         try:
-            ai_command = get_ai_response(question=kwargs.get('question'), history_manager=self.gaidme.history_manager, config_manager=self.gaidme.config_manager)
+            ai_command = get_ai_response(
+                question=question,
+                history_manager=self.gaidme.history_manager,
+                config_manager=self.gaidme.config_manager
+            )
         except ConfigError as e:
             self.gaidme.io.print_error(str(e))
-            
+            return
+
         self.gaidme.io.print_ai_suggestion(ai_command)
         
         choices = ["Run command", "Copy command", "Explain command", "Back to main menu"]

@@ -1,27 +1,49 @@
 import requests
-import platform
-import os
-from gaidme.models import CommandHistory
 from gaidme.history_manager import HistoryManager
 from gaidme.config_manager import ConfigManager
-from gaidme.exceptions import InvalidAPIKeyError, APIError
+from gaidme.exceptions import InvalidAPIKeyError, APIError, UsageLimitExceededError
+from gaidme._version import __version__ as client_version
+from gaidme.utils import get_system_metadata
 
+def extract_error_details(response):
+    """
+    Extract status code and error details from the API response.
+    
+    Args:
+        response (requests.Response): The API response object.
+    
+    Returns:
+        tuple: A tuple containing (status_code, error_code, error_message).
+    """
+    status_code = response.status_code
+    try:
+        error_data = response.json().get("error", {})
+        error_code = error_data.get("type", "unknown_error")
+        error_message = error_data.get("message", "An unknown error occurred")
+    except ValueError:
+        error_code = "invalid_json"
+        error_message = "Invalid JSON response from API"
+    
+    return status_code, error_code, error_message
 
-def get_system_metadata():
-    return {
-        "os": platform.system(),
-        "os_version": platform.version(),
-        "terminal": os.environ.get("TERM", "Unknown"),
-        "shell": os.environ.get("SHELL", "Unknown")
-    }
-
+def handle_api_error(response):
+    """Handle API errors and raise appropriate exceptions."""
+    if not response.ok:
+        status_code, error_code, error_message = extract_error_details(response)
+        if status_code == 401 and error_code == "invalid_api_key":
+            raise InvalidAPIKeyError("Invalid API key")
+        elif status_code == 429 and error_code == "usage_limit_exceeded":
+            raise UsageLimitExceededError("Usage limit exceeded. Check your usage at https://gaidme.app/dashboard/usage")
+        else:
+            raise APIError(f"API request failed: {error_message}")
 
 def get_ai_response(question: str, history_manager: HistoryManager, config_manager: ConfigManager):
     api_key = config_manager.get_api_key()
 
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "X-Client-Version": client_version
     }
     payload = {
         "question": question,
@@ -31,14 +53,19 @@ def get_ai_response(question: str, history_manager: HistoryManager, config_manag
         }
     }
 
+    # api_url = "http://localhost:5050"
+    api_url = "https://api-dev.gaidme.app"
+
     try:
-        api_url = "https://api.gaidme.app"
         response = requests.post(
-            f"{api_url}/v1/completions/asks", json=payload, headers=headers, timeout=10)
-        response.raise_for_status()
+            f"{api_url}/v1/completions/asks",
+            json=payload,
+            headers=headers,
+            timeout=12
+        )
+        handle_api_error(response)
         return response.json()["answer"]
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 401:
-            raise InvalidAPIKeyError("Invalid API key")
-        else:
-            raise APIError(f"API request failed: {str(e)}")
+    except requests.exceptions.Timeout:
+        raise APIError("The request timed out. Please try again later.")
+    except requests.exceptions.RequestException as e:
+        raise APIError(f"API request failed: {str(e)}")

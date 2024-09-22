@@ -6,13 +6,10 @@
             "type": "debugpy",
             "request": "launch",
             "module": "src.gaidme.cli",
-            "args": [
-                "reflect",
-                "show",
-                "docker",
-                "images"
-            ],
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            }
         }
     ]
 }
