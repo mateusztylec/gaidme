@@ -203,3 +203,4 @@ docs/.npm
 docs/.node_repl_history
 docs/.next
 docs/out
+README.internal.md

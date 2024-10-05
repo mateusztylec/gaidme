@@ -1,4 +1,5 @@
 import os  # Added import for accessing current directory
+from typing import Dict, Any  # Added for type hinting in Python 3.8
 
 from prompt_toolkit.styles import Style
 from prompt_toolkit import PromptSession
@@ -52,13 +53,15 @@ class GAIDME:
 
         style = Style.from_dict({
             'completion-menu.completion': 'bg:#BA55D3 #ffffff',  # Light purple background
-            'completion-menu.completion.current': 'bg:#9370DB #000000',  # Slightly darker light purple for current selection
+            # Slightly darker light purple for current selection
+            'completion-menu.completion.current': 'bg:#9370DB #000000',
             'prompt': 'bold #FFE403'  # Lighter yellow for the prompt
         })
 
         return PromptSession(
             history=self.history,
-            completer=CustomCompleter(self.command_manager.get_available_commands()),
+            completer=CustomCompleter(
+                self.command_manager.get_available_commands()),
             style=style,
             complete_while_typing=True,
             editing_mode=EditingMode.EMACS,
@@ -68,13 +71,15 @@ class GAIDME:
         )
 
     def run(self) -> None:
-        self.io.print_message("Welcome to gaidme! Type /help for available commands")
+        self.io.print_message(
+            "Welcome to gaidme! Type /help for available commands")
         while self.running:
             try:
                 self.session.message = self.get_prompt_text()  # Update prompt dynamically
                 user_input = self.session.prompt()
                 if user_input.startswith("/"):
-                    self.command_manager.handle_input(user_input, command_history=self.history_manager.get_history())
+                    self.command_manager.handle_input(
+                        user_input, command_history=self.history_manager.get_history())
                 else:
                     command_result = self.io.execute_command(user_input)
                     if user_input != "":
@@ -85,11 +90,14 @@ class GAIDME:
                 self.io.print_error(str(e))
             except Exception as e:
                 logger.error(f"An unexpected error occurred: {str(e)}")
-                self.io.print_error("An unexpected error occurred. Please try again.")
+                self.io.print_error(
+                    "An unexpected error occurred. Please try again.")
 
-def main():
+
+def main() -> None:
     gaidme = GAIDME()
     gaidme.run()
+
 
 if __name__ == "__main__":
     main()

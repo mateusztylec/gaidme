@@ -1,11 +1,14 @@
 import requests
+from requests import Response
 from gaidme.history_manager import HistoryManager
 from gaidme.config_manager import ConfigManager
 from gaidme.exceptions import InvalidAPIKeyError, APIError, UsageLimitExceededError
 from gaidme._version import __version__ as client_version
 from gaidme.utils import get_system_metadata
+from gaidme.logger import get_logger
+logger = get_logger(__name__)
 
-def extract_error_details(response):
+def extract_error_details(response: Response):
     """
     Extract status code and error details from the API response.
     
@@ -16,11 +19,15 @@ def extract_error_details(response):
         tuple: A tuple containing (status_code, error_code, error_message).
     """
     status_code = response.status_code
+    logger.debug(f"Status code: {status_code}")
     try:
+        logger.debug(f"Response: {response.json()}")
         error_data = response.json().get("error", {})
+        logger.debug(f"Error data: {error_data}")
         error_code = error_data.get("type", "unknown_error")
         error_message = error_data.get("message", "An unknown error occurred")
-    except ValueError:
+    except ValueError as e:
+        logger.debug(f"{e}")
         error_code = "invalid_json"
         error_message = "Invalid JSON response from API"
     
@@ -34,6 +41,8 @@ def handle_api_error(response):
             raise InvalidAPIKeyError("Invalid API key")
         elif status_code == 429 and error_code == "usage_limit_exceeded":
             raise UsageLimitExceededError("Usage limit exceeded. Check your usage at https://gaidme.app/dashboard/usage")
+        elif status_code == 502:
+            raise APIError("Service is under maintenance. Please try again later.")
         else:
             raise APIError(f"API request failed: {error_message}")
 
@@ -53,8 +62,9 @@ def get_ai_response(question: str, history_manager: HistoryManager, config_manag
         }
     }
 
+    # api_url = "https://api-dev.gaidme.app"
+    api_url = "https://api.gaidme.app"
     # api_url = "http://localhost:5050"
-    api_url = "https://api-dev.gaidme.app"
 
     try:
         response = requests.post(

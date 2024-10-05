@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 from gaidme.logger import get_logger
 
 logger = get_logger(__name__)
@@ -7,13 +7,13 @@ class HistoryManager:
     def __init__(self):
         self.command_history: List[Dict] = []
         self.total_history_chars = 0
-        self.max_history_chars = 50000
+        self.max_history_chars = 30000
         self.max_history_entries = 10
         self.truncated_entry_size = 500
-        self.max_single_entry_chars = 6000
+        self.max_single_entry_chars = 3000
 
-    def add_to_history(self, command: str, stdout: str, stderr: str, result: str) -> None:
-        def truncate(text: str, max_length: int) -> tuple[str, bool]:
+    def add_to_history(self, command: str, stdout: str, stderr: str, user_query: Optional[str] = None) -> None:
+        def truncate(text: str, max_length: int):
             return (text[:max_length] + "...", True) if len(text) > max_length else (text, False)
 
         stdout, stdout_truncated = truncate(stdout, self.max_single_entry_chars)
@@ -27,9 +27,10 @@ class HistoryManager:
             "command": command,
             "stdout": stdout,
             "stderr": stderr,
-            "result": result,
             "truncated": stderr_truncated or stdout_truncated
         }
+        if user_query is not None:
+            new_entry["user_query"] = user_query
 
         # Calculate the size of the new entry
         entry_size = sum(len(v) for v in new_entry.values() if isinstance(v, str))

@@ -1,7 +1,8 @@
 from prompt_toolkit.completion import Completer, Completion
+from typing import List
 
 class CustomCompleter(Completer):
-    def __init__(self, commands: list[str]):
+    def __init__(self, commands: List[str]):
         self.command_names = commands
         self.command_completions = {}
 

@@ -3,7 +3,7 @@ import logging
 from colorlog import ColoredFormatter
 
 def get_logger(logger_name):
-    log_level = os.getenv("LOG_LEVEL", "WARNING").upper()
+    log_level = os.getenv("GAIDME_LOG_LEVEL", "WARNING").upper()
     logger = logging.getLogger(logger_name)
     logger.setLevel(log_level)
     logger.propagate = False  # Prevent log propagation to avoid double logging

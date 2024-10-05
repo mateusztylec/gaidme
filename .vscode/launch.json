@@ -8,7 +8,8 @@
             "module": "src.gaidme.cli",
             "console": "integratedTerminal",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/src"
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "GAIDME_LOG_LEVEL": "DEBUG"
             }
         }
     ]

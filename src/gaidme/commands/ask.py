@@ -27,12 +27,12 @@ class AskCommand(BaseCommand):
 
         self.gaidme.io.print_ai_suggestion(ai_command)
         
-        choices = ["Run command", "Copy command", "Explain command", "Back to main menu"]
+        choices = ["Run command", "Copy command", "Back to main menu"]
         selection = self.gaidme.io.choose_option(message="Select an option", choices=choices)
         
         if selection == "Run command":
             command_details = self.gaidme.io.execute_command(ai_command)
-            self.gaidme.history_manager.add_to_history(**command_details)
+            self.gaidme.history_manager.add_to_history(user_query=question, **command_details)
         elif selection == "Copy command":
             pyperclip.copy(ai_command)
             self.gaidme.io.print_message("Command copied to clipboard")

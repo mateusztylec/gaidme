@@ -1,9 +1,7 @@
 import os  # Ensure os is imported for directory operations
 import platform
-import shlex
 from rich.console import Console
 from rich.text import Text
-from rich.theme import Theme as RichTheme
 import subprocess
 import questionary
 from questionary import Style
@@ -66,7 +64,6 @@ class IO:
                 "command": "",
                 "stdout": "",
                 "stderr": "",
-                "result": ""
             }
 
         # Handle 'cd' internally
@@ -93,8 +90,7 @@ class IO:
                     return {
                         "command": "cd",
                         "stdout": f"Changed directory to {self.current_path}",
-                        "stderr": "",
-                        "result": "Success"
+                        "stderr": ""
                     }
                 else:
                     error_message = f"cd: no such file or directory: {path}"
@@ -103,8 +99,7 @@ class IO:
                     return {
                         "command": "cd",
                         "stdout": "",
-                        "stderr": error_message,
-                        "result": "Error"
+                        "stderr": error_message
                     }
             except PermissionError:
                 error_message = f"cd: permission denied: {path}"
@@ -113,8 +108,7 @@ class IO:
                 return {
                     "command": "cd",
                     "stdout": "",
-                    "stderr": error_message,
-                    "result": "Error"
+                    "stderr": error_message
                 }
             except Exception as e:
                 error_message = f"cd: {str(e)}"
@@ -123,8 +117,7 @@ class IO:
                 return {
                     "command": "cd",
                     "stdout": "",
-                    "stderr": error_message,
-                    "result": "Error"
+                    "stderr": error_message
                 }
 
         # Existing handling for other commands
@@ -146,24 +139,22 @@ class IO:
 
             if is_interactive:
                 # Execute interactive command with shell=True
+                logger.debug(f"Executing interactive command: {command}")
                 process = subprocess.Popen(command, shell=True, cwd=self.current_path)
                 process.communicate()
                 rc = process.returncode
-                result = "Success" if rc == 0 else f"Command exited with code {rc}"
                 return {
                     "command": command,
                     "stdout": "",
-                    "stderr": "",
-                    "result": result
+                    "stderr": ""
                 }
             else:
                 # Non-interactive command: capture stdout and stderr
                 # Parse the command using shlex for security
-                args = shlex.split(command)
 
                 process = subprocess.Popen(
-                    args,
-                    shell=shell,  # Use shell=False on Unix-like systems
+                    command,
+                    shell=True,  # Use shell=False on Unix-like systems
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
@@ -194,13 +185,11 @@ class IO:
                 
                 stdout = "\n".join(stdout_lines)
                 stderr = "\n".join(stderr_lines)
-                result = "Success" if rc == 0 else stderr
 
                 return {
                     "command": command,
                     "stdout": stdout,
-                    "stderr": stderr,
-                    "result": result
+                    "stderr": stderr
                 }
         except Exception as e:
             error_message = f"Error executing command: {e}"
@@ -209,6 +198,5 @@ class IO:
             return {
                 "command": command,
                 "stdout": "",
-                "stderr": error_message,
-                "result": "Error"
+                "stderr": error_message
             }
