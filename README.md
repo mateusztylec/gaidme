@@ -12,12 +12,8 @@ gaidme is an AI-powered CLI tool that helps you use the terminal more easily. It
 
 ## Demo
 <p align="center">
-  <video width="100%" height="auto" controls>
-    <source src="./docs/files/gaidme_demo_1.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
+  <img src="./docs/files/gaidme_demo_1.gif" alt="gaidme Demo" width="100%">
 </p>
-
 </div>
 
 
