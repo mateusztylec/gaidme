@@ -1,6 +1,6 @@
 <div align="center">
 
-# gaidme <img src="./docs/files/icon.png" alt="gaidme Logo" width="40" height="40" style="vertical-align: middle; margin-left: 10px;">
+# gaidme <img src="./docs/public/icon.png" alt="gaidme Logo" width="40" height="40" style="vertical-align: middle; margin-left: 10px;">
 
 ## CLI Tool Powered by AI
 
@@ -12,7 +12,7 @@ gaidme is an AI-powered CLI tool that helps you use the terminal more easily. It
 
 ## Demo
 <p align="center">
-  <img src="./docs/files/gaidme_demo_1.gif" alt="gaidme Demo" width="100%">
+  <img src="./docs/public/gaidme_demo_1.gif" alt="gaidme Demo" width="100%">
 </p>
 </div>
 
