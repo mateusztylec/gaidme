@@ -1,7 +1,20 @@
+import YouTube from './components/YouTube'
+
+const github = 'https://github.com/mateusztylec/gaidme';
+
 export default {
-    logo: <span>gaidme docs</span>,
+    docsRepositoryBase: `${github}/blob/main/docs`,
     project: {
-      link: 'https://github.com/mateusztylec/gaidme'
-    }
+        link: github
+    },
+    logo: <strong>gaidme docs</strong>,
+    useNextSeoProps() {
+        return {
+            titleTemplate: '%s - gaidme Documentation',
+        };
+    },
+    components: {
+        YouTube
+    },
     // ... other theme options
 }

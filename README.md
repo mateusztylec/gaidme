@@ -45,6 +45,7 @@ gaidme is an AI-powered CLI tool that helps you use the terminal more easily. It
 ### Installation Steps
 
 1. **Install with pip** 📦
+   
    ```bash
    pip install gaidme
    ```
