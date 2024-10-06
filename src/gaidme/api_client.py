@@ -62,9 +62,8 @@ def get_ai_response(question: str, history_manager: HistoryManager, config_manag
         }
     }
 
-    # api_url = "https://api-dev.gaidme.app"
     api_url = "https://api.gaidme.app"
-    # api_url = "http://localhost:5050"
+    logger.debug(f"Sending request to {api_url}")
 
     try:
         response = requests.post(
